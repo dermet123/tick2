@@ -1,0 +1,162 @@
+<?php
+require_once 'config/database.php';
+require_once 'lib/TCPDF/tcpdf.php';
+
+if (!isset($_GET['id'])) {
+  die("ID de usuario requerido.");
+}
+
+$id = $_GET['id'];
+
+// Obtener el usuario
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+  die("Usuario no encontrado.");
+}
+
+// Incrementar número de reporte
+$reportNumber = $user['report_count'] + 1;
+$stmt = $pdo->prepare("UPDATE users SET report_count = ? WHERE id = ?");
+$stmt->execute([$reportNumber, $id]);
+
+// Datos estáticos para el modelo (luego serán dinámicos)
+$data = [
+  'solicitud_id' => 1001,
+  'pago_busqueda' => 5.00,
+  'pago_verificacion' => 4.00,
+  'cantidad_folio' => 2,
+  'pago_folio' => 2.00,
+  'cantidad_fotocopia' => 3,
+  'pago_fotocopia' => 1.50,
+  'igv' => 0.00,  // IGV en 0 soles como solicitado
+  'created_at' => date('Y-m-d'),
+  'updated_at' => date('Y-m-d'),
+];
+
+$subtotal = $data['pago_busqueda'] + $data['pago_verificacion'] + $data['pago_folio'] + $data['pago_fotocopia'];
+$total = $subtotal;
+
+// Crear PDF tipo factura
+$pdf = new TCPDF('P', 'mm', array(80, 150), true, 'UTF-8', false);
+$pdf->SetMargins(5, 5, 5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+// Logo (ajusta ruta si es necesario)
+$logoPath = 'public/img/logo.jpg';
+if (file_exists($logoPath)) {
+  $pdf->Image($logoPath, 30, 2, 15);
+}
+
+$pdf->Ln(2); // espacio debajo del logo
+
+// Cabecera de la factura
+$html = '
+  <div style="text-align:center; font-size:10px; line-height:1.2;">
+    <h4 style="text-align:center; margin-top:0; font-size:12px;">ARCHIVO REGIONAL PUNO</h4>
+    <p style="text-align:center; font-size:8px; margin:0;">RUC: 20180573012</p>
+    <p style="text-align:center; font-size:8px; margin:0;">Ejercito 645, Puno 21002</p>
+    <p style="text-align:center; font-size:9px; margin:0;">No: F001-' . str_pad($reportNumber, 6, '0', STR_PAD_LEFT) . '</p>
+  </div>
+  
+  <hr style="border-top:1px solid #000; margin:3px 0;">
+  
+  <div style="font-size:8px; line-height:1.3;">
+    <p style="margin:1px 0;"><b>Nombre</b> ' . htmlspecialchars($user['name']) . '</p>
+    <p style="margin:1px 0;"><b>Celular:</b> ' . (isset($user['phone']) ? $user['phone'] : '0000000000') . '</p>
+    <p style="margin:1px 0;"><b>Email:</b> ' . (isset($user['email']) ? htmlspecialchars($user['email']) : 'Jr. Los Lirios A-15') . '</p>
+    // <p style="margin:1px 0;"><b>Fecha Emisión:</b> ' . $data['created_at'] . '</p>
+  </div>
+  <hr style="border-top:1px solid #000; margin:3px 0;">
+';
+
+// Tabla de detalle
+
+// ITEM, CANTIDA, DESCRIPCION, VALOR TOTAL,
+// 1,     3  ,      COPIAS,      CANTIDAD * VALOR COPIAS= 60   
+
+
+
+$html .= '
+  <table cellpadding="2" style="width:100%; font-size:8px; border-collapse:collapse;">
+    <tr>
+      <th style="text-align:center; width:15%; border-bottom:1px solid #000;">Cant.</th>
+      <th style="text-align:left; width:55%; border-bottom:1px solid #000;">Descripción</th>
+      <th style="text-align:right; width:30%; border-bottom:1px solid #000;">Valor Total</th>
+    </tr>
+    <tr>
+      <td style="text-align:center;">1</td>
+      <td style="text-align:left;">Búsqueda</td>
+      <td style="text-align:right;">S/ ' . number_format($data['pago_busqueda'], 2) . '</td>
+    </tr>
+    <tr>
+      <td style="text-align:center;">1</td>
+      <td style="text-align:left;">Verificación</td>
+      <td style="text-align:right;">S/ ' . number_format($data['pago_verificacion'], 2) . '</td>
+    </tr>
+    <tr>
+      <td style="text-align:center;">' . $data['cantidad_folio'] . '</td>
+      <td style="text-align:left;">Folio</td>
+      <td style="text-align:right;">S/ ' . number_format($data['pago_folio'], 2) . '</td>
+    </tr>
+    <tr>
+      <td style="text-align:center;">' . $data['cantidad_fotocopia'] . '</td>
+      <td style="text-align:left;">Fotocopia</td>
+      <td style="text-align:right;">S/ ' . number_format($data['pago_fotocopia'], 2) . '</td>
+    </tr>
+  </table>
+
+  <table style="width:100%; font-size:8px; margin-top:10px;">
+    <tr>
+      <td style="text-align:right; width:60%;"><b>SUBTOTAL:</b></td>
+      <td style="text-align:right; width:40%;">S/ ' . number_format($subtotal, 2) . '</td>
+    </tr>
+    <tr>
+      <td style="text-align:right;">IGV:</td>
+      <td style="text-align:right;">S/ ' . number_format($data['igv'], 2) . '</td>
+    </tr>
+    <tr>
+      <td style="text-align:right;"><b>TOTAL:</b></td>
+      <td style="text-align:right;"><b>S/ ' . number_format($total, 2) . '</b></td>
+    </tr>
+  </table>
+  <hr style="border-top:1px solid #000; margin:3px 0;">
+';
+
+// Información adicional
+$html .= '
+  <div style="font-size:7px; line-height:1.2;">
+    <p style="margin:2px 0;"><b>Información Adicional</b></p>
+    <table style="width:100%; font-size:7px;">
+      <tr>
+        <td style="width:50%;"><b>CONDICIÓN DE PAGO:</b></td>
+        <td style="width:50%;">Efectivo</td>
+      </tr>
+      <tr>
+        <td><b>VENDEDOR:</b></td>
+        <td>Benjamin Aster</td>
+      </tr>
+    </table>
+  </div>
+  <hr style="border-top:1px solid #000; margin:3px 0;">
+  
+  <div style="text-align:center; font-size:7px;">
+    <p style="margin:2px 0;">Gracias Por su Atención <b>(ARP)</b></p>
+  </div>
+';
+
+// Agregar contenido al PDF
+$pdf->writeHTML($html, true, false, true, false, '');
+
+// Generar QR
+$qrContent = "ID: " . $user['id'] . 
+             "\nNombre: " . $user['name'] . 
+             "\nReporte N°: " . $reportNumber .
+             "\nTotal: S/ " . number_format($total, 2);
+$pdf->write2DBarcode($qrContent, 'QRCODE,H', 28, 120, 25, 25);
+
+// Mostrar el PDF
+$pdf->Output('factura_electronica.pdf', 'I');

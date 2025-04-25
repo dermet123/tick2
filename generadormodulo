@@ -1,0 +1,144 @@
+<?php
+require_once 'config/database.php';
+require_once 'lib/TCPDF/tcpdf.php';
+
+if (!isset($_GET['id'])) {
+  die("ID de usuario requerido.");
+}
+
+$id = $_GET['id'];
+
+// Obtener el usuario
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+  die("Usuario no encontrado.");
+}
+
+// Obtener y actualizar el contador de reportes
+$reportNumber = $user['report_count'] + 1;  // El siguiente número de reporte
+
+// Actualizamos el contador de reportes
+$stmt = $pdo->prepare("UPDATE users SET report_count = ? WHERE id = ?");
+$stmt->execute([$reportNumber, $id]);
+
+$pdf = new TCPDF('P', 'mm', array(80, 150), true, 'UTF-8', false);
+$pdf->SetMargins(5, 5, 5);
+$pdf->AddPage();
+
+// Información del ticket
+$html = '
+  <h3 style="text-align:left;">N° de Reporte: ' . $reportNumber . '</h3>
+  <h3 style="text-align:center;"> Ticket de Usuario</h3>
+  <hr>
+  <p><strong>ID:</strong> ' . $user['id'] . '</p>
+  <p><strong>Nombre:</strong> ' . $user['name'] . '</p>
+  <hr>
+  <p style="text-align:center;">¡Gracias por registrarse!</p>
+';
+
+// Escribimos el contenido HTML
+$pdf->writeHTML($html, true, false, true, false, '');
+
+// Generar código QR
+$qrContent = "Usuario ID: " . $user['id'] . "\nNombre: " . $user['name'] . "\nReporte N°: " . $reportNumber;
+$pdf->write2DBarcode($qrContent, 'QRCODE,H', 10, 120, 50, 50);  // Ajustar posición y tamaño si es necesario
+
+// Salida del PDF
+$pdf->Output('ticket.pdf', 'I');
+
+
+<?php
+require_once 'config/database.php';
+require_once 'lib/TCPDF/tcpdf.php';
+
+if (!isset($_GET['id'])) {
+  die("ID de usuario requerido.");
+}
+
+$id = $_GET['id'];
+
+// Obtener el usuario
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+  die("Usuario no encontrado.");
+}
+
+// Incrementar número de reporte
+$reportNumber = $user['report_count'] + 1;
+$stmt = $pdo->prepare("UPDATE users SET report_count = ? WHERE id = ?");
+$stmt->execute([$reportNumber, $id]);
+
+// Crear PDF tipo ticket
+$pdf = new TCPDF('P', 'mm', array(80, 150), true, 'UTF-8', false);
+$pdf->SetMargins(5, 5, 5);
+$pdf->SetAutoPageBreak(true, 5);
+$pdf->AddPage();
+
+// Logo (usa tu logo local, ajusta el path)
+$logoPath = 'public/img/logo.jpg'; // asegúrate de tener un archivo logo.png
+if (file_exists($logoPath)) {
+    $pdf->Image($logoPath, 1, 1, 20); // centrado arriba
+    $pdf->Ln(1); // espacio debajo del logo
+}
+
+// Cabecera del ticket
+$html = '
+  <h4 style="text-align:center; margin:0;">OFICINA DE TRÁMITES</h4>
+  <hr>
+  <p><strong>ID:</strong> ' . $user['id'] . '</p>
+  <p><strong>Nombre:</strong> ' . htmlspecialchars($user['name']) . '</p>
+  <p><strong>N° de Reporte:</strong> ' . $reportNumber . '</p>
+  <hr>
+';
+
+// Simulamos datos de la tabla
+$data = [
+    'solicitud_id' => 1001,
+    'pago_busqueda' => 5.00,
+    'pago_verificacion' => 4.00,
+    'cantidad_folio' => 2,
+    'pago_folio' => 2.00,
+    'cantidad_fotocopia' => 3,
+    'pago_fotocopia' => 1.50,
+    'created_at' => date('Y-m-d'),
+    'updated_at' => date('Y-m-d'),
+];
+
+$subtotal = $data['pago_busqueda'] + $data['pago_verificacion'] + $data['pago_folio'] + $data['pago_fotocopia'];
+$total = $subtotal; // puedes sumar otros costos si deseas
+
+// Crear tabla HTML con datos
+$html .= '
+<table border="1" cellpadding="3" cellspacing="0" style="font-size:10px; width:100%;">
+  <tr style="background-color:#f2f2f2;">
+    <th>Concepto</th>
+    <th>Monto (S/)</th>
+  </tr>
+  <tr><td>Búsqueda</td><td align="right">' . number_format($data['pago_busqueda'], 2) . '</td></tr>
+  <tr><td>Verificación</td><td align="right">' . number_format($data['pago_verificacion'], 2) . '</td></tr>
+  <tr><td>Folio (' . $data['cantidad_folio'] . ')</td><td align="right">' . number_format($data['pago_folio'], 2) . '</td></tr>
+  <tr><td>Fotocopias (' . $data['cantidad_fotocopia'] . ')</td><td align="right">' . number_format($data['pago_fotocopia'], 2) . '</td></tr>
+  <tr><td><strong>Subtotal</strong></td><td align="right"><strong>' . number_format($subtotal, 2) . '</strong></td></tr>
+  <tr><td><strong>Total</strong></td><td align="right"><strong>' . number_format($total, 2) . '</strong></td></tr>
+</table>
+<br>
+<p style="text-align:center;">Fecha: ' . $data['created_at'] . '</p>
+<hr>
+<p style="text-align:center; font-size:10px;">¡Gracias por usar nuestro servicio!</p>
+';
+
+// Agregamos HTML al PDF
+$pdf->writeHTML($html, true, false, true, false, '');
+
+// Generar QR al centro (una vez)
+$qrContent = "ID: " . $user['id'] . "\nNombre: " . $user['name'] . "\nReporte N°: " . $reportNumber;
+$pdf->write2DBarcode($qrContent, 'QRCODE,H', 25, 115, 30, 30); // centrado y pequeño
+
+// Salida del PDF
+$pdf->Output('ticket.pdf', 'I');
