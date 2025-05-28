@@ -1,0 +1,194 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\geometry{a4paper, margin=1in}
+
+% Configuración para listados de código
+\lstset{
+    language=PHP,
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=true,
+    showstringspaces=false,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{purple}
+}
+
+\title{Documentación del Sistema Generador de Tickets}
+\author{Equipo de Desarrollo}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción}
+\subsection{Propósito}
+Este documento proporciona una documentación completa del sistema Generador\_Tickets, una solución integral para la gestión de usuarios y la generación automatizada de facturas electrónicas. El sistema está diseñado para ser fácil de usar, seguro y escalable.
+
+\subsection{Alcance}
+El sistema abarca las siguientes funcionalidades principales:
+\begin{itemize}
+    \item Gestión de usuarios (crear, leer, actualizar, eliminar)
+    \item Generación de facturas en formato PDF
+    \item Interfaz web amigable
+    \item API RESTful para integraciones
+\end{itemize}
+
+\subsection{Características Principales}
+\begin{itemize}
+    \item Generación automática de facturas numeradas
+    \item Almacenamiento seguro de datos
+    \item Interfaz responsiva
+    \item Fácil instalación y configuración
+    \item Código fuente bien documentado
+\end{itemize}
+
+\section{Estructura del Proyecto}
+El proyecto se organiza en los siguientes directorios y archivos principales:
+
+\begin{itemize}
+    \item \textbf{.htaccess}: Archivo de configuración para el servidor Apache.
+    \item \textbf{api/}: Contiene los archivos PHP para la gestión de la API.
+    \item \textbf{carpeta\_pdfs/}: Almacena los archivos PDF generados.
+    \item \textbf{config/}: Contiene archivos de configuración, como la configuración de la base de datos.
+    \item \textbf{facturas/}: Posiblemente almacena facturas.
+    \item \textbf{informe/}: Contiene este informe.
+    \item \textbf{lib/}: Contiene librerías externas, como TCPDF.
+    \item \textbf{pdfs/}: Almacena archivos PDF.
+    \item \textbf{public/}: Contiene archivos públicos como HTML, CSS y JavaScript.
+    \item \textbf{generatePDF.php}: Archivo PHP para generar facturas en formato PDF.
+    \item \textbf{index.php}: Página principal del sistema.
+\end{itemize}
+
+\section{Componentes Clave}
+
+\subsection{index.php}
+La página \texttt{index.php} es la página de inicio del sistema. Permite crear un usuario.
+
+\subsection{generatePDF.php}
+El archivo \texttt{generatePDF.php} es responsable de generar las facturas en formato PDF. Utiliza la librería TCPDF para crear los documentos PDF. Recibe el ID del usuario como parámetro GET y genera una factura con los datos del usuario y otros datos estáticos.
+
+\subsection{config/database.php}
+El archivo \texttt{config/database.php} contiene la configuración de la base de datos. Define las credenciales de acceso a la base de datos MySQL.
+
+\section{Instalación y Configuración}
+\subsection{Requisitos del Sistema}
+\begin{itemize}
+    \item Servidor web Apache 2.4 o superior
+    \item PHP 7.4 o superior
+    \item MySQL 5.7 o superior
+    \item Extensión PHP PDO habilitada
+    \item Extensión PHP GD para generación de imágenes en PDF
+\end{itemize}
+
+\subsection{Configuración de la Base de Datos}
+La configuración de la base de datos se define en el archivo \texttt{config/database.php}. Los parámetros de configuración son:
+
+\begin{itemize}
+    \item \textbf{Host}: \texttt{localhost}
+    \item \textbf{Base de datos}: \texttt{proyecto\_php}
+    \item \textbf{Usuario}: \texttt{root}
+    \item \textbf{Contraseña}: (vacía)
+\end{itemize}
+
+\subsection{Pasos de Instalación}
+\begin{enumerate}
+    \item Clonar el repositorio en el directorio web
+    \item Configurar los permisos de escritura en las carpetas necesarias
+    \item Importar el esquema de la base de datos
+    \item Configurar el archivo \texttt{config/database.php} con las credenciales correctas
+    \item Acceder a la aplicación a través del navegador web
+\end{enumerate}
+
+\section{Frontend}
+El frontend del sistema se encuentra en el directorio \texttt{public/}. Utiliza HTML, CSS y JavaScript para la interfaz de usuario.
+
+\subsection{public/index.php}
+El archivo \texttt{public/index.php} contiene el formulario para la creación de usuarios y la lista de usuarios. Utiliza Tailwind CSS para el diseño.
+
+\subsection{public/script.js}
+El archivo \texttt{public/script.js} contiene la lógica JavaScript para el formulario de creación de usuarios, la lista de usuarios y la interacción con la API.
+
+\subsection{public/style.css}
+El archivo \texttt{public/style.css} contiene estilos CSS adicionales para el frontend.
+
+\section{API Endpoints}
+El directorio \texttt{api/} contiene los archivos PHP para la gestión de la API RESTful. A continuación se detallan los endpoints disponibles:
+
+\subsection{Usuarios}
+\begin{itemize}
+    \item \textbf{POST /api/users.php}: Crea un nuevo usuario.
+    \item \textbf{GET /api/list.php}: Obtiene la lista de usuarios.
+    \item \textbf{PUT /api/edit.php}: Actualiza un usuario existente.
+    \item \textbf{DELETE /api/delete.php}: Elimina un usuario.
+\end{itemize}
+
+\subsection{Ejemplo de Uso de la API}
+A continuación se muestra un ejemplo de cómo consumir la API usando cURL:
+
+\begin{lstlisting}[language=bash,caption=Ejemplo de creación de usuario]
+curl -X POST http://localhost/api/users.php \
+     -H "Content-Type: application/json" \
+     -d '{"nombre":"Juan Perez", "email":"juan@ejemplo.com"}'
+\end{lstlisting}
+
+\section{Guía de Uso}
+\subsection{Generación de Facturas}
+Para generar una factura, sigue estos pasos:
+\begin{enumerate}
+    \item Inicia sesión en el sistema
+    \item Navega a la sección de facturas
+    \item Completa el formulario con los datos del cliente
+    \item Agrega los productos o servicios
+    \item Haz clic en "Generar Factura"
+\end{enumerate}
+
+\section{Solución de Problemas}
+\subsection{Problemas Comunes}
+\begin{description}
+    \item[No se pueden generar PDFs] Verifica que la carpeta de salida tenga permisos de escritura.
+    \item[Error de conexión a la base de datos] Revisa las credenciales en el archivo de configuración.
+    \item[Problemas de permisos] Asegúrate de que el servidor web tenga permisos de escritura en las carpetas necesarias.
+\end{description}
+
+\section{Seguridad}
+\begin{itemize}
+    \item Todas las contraseñas se almacenan con hash seguro
+    \item Se recomienda configurar HTTPS para mayor seguridad
+    \item Validación de entrada en todos los formularios
+    \item Protección contra inyección SQL mediante consultas preparadas
+\end{itemize}
+
+\section{Licencia}
+Este software se distribuye bajo la licencia MIT. Para más detalles, consulta el archivo LICENSE incluido en el repositorio.
+
+\section{Contacto}
+Para soporte o consultas, por favor contacta a:\
+\textbf{Email:} soporte@ejemplo.com\
+\textbf{Sitio web:} https://www.ejemplo.com
+
+\section{Contribuciones}
+Las contribuciones son bienvenidas. Por favor, lee las guías de contribución antes de enviar un pull request.
+
+\section{Historial de Versiones}
+\begin{itemize}
+    \item \textbf{v1.0.0} (2025-05-28) - Versión inicial
+    \item \textbf{v1.0.1} (Próximamente) - Mejoras de rendimiento
+\end{itemize}
+
+\end{document}

@@ -41,19 +41,27 @@
               Selecciona un usuario:
             </label>
 
-            <select id="userSelect" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4">
+            <select id="userSelect" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2">
               <option value="">Ninguno</option>
             </select>
 
+            
+            <div class="mb-4">
+              <label for="clientName" class="block text-sm font-medium text-gray-700 mb-1">
+                Nombre del Cliente:
+              </label>
+              <input type="text" id="clientName" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ingrese el nombre del cliente" required>
+            </div>
+
             <button onclick="generarReporte()"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200 mb-2">
               Generar PDF
             </button>
 
             <button onclick="guardarPDF()"
-      class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
-      Guardar PDF
-    </button>
+              class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+              Guardar PDF
+            </button>
 
           </div>
 

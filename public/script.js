@@ -139,22 +139,30 @@ async function loadUsers() {
 
     function generarReporte() {
       const userId = document.getElementById('userSelect').value;
-      if (userId) {
-        window.open(`../generatePDF.php?id=${userId}`, '_blank');
+      const clientName = document.getElementById('clientName').value;
+      
+      console.log('ID de usuario:', userId);
+      console.log('Nombre del cliente:', clientName);
+      
+      if (userId && clientName) {
+        const url = `../generatePDF.php?id=${userId}&client_name=${encodeURIComponent(clientName)}`;
+        console.log('URL generada:', url);
+        window.open(url, '_blank');
       } else {
-        alert("Por favor selecciona un usuario");
+        alert("Por favor completa todos los campos requeridos");
       }
     }
 
     function guardarPDF() {
-      const userId = document.getElementById('userSelect').value; // Obtener el id del usuario seleccionado
+      const userId = document.getElementById('userSelect').value;
+      const clientSelect = document.getElementById('clientSelect');
+      const clientName = clientSelect.value;
   
-      if (userId) {
-          // Abrir la URL para generar y guardar el PDF
-          window.location.href = `../guardar_pdf.php?id=${userId}&action=save`;
+      if (userId && clientName) {
+        window.location.href = `../guardar_pdf.php?id=${userId}&client_name=${encodeURIComponent(clientName)}&action=save`;
       } else {
-          alert("Por favor selecciona un usuario");
+        alert("Por favor selecciona un usuario y un cliente");
       }
-  }
+    }
   
 
